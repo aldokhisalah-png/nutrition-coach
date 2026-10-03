@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Nutrition Coach</title>
+<meta name="apple-mobile-web-app-title" content="Nutrition">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/fx.css">
+</head>
+<body>
+<div id="app"><div class="boot"><span class="brand-mark"></span></div></div>
+<script src="src/engine.js"></script>
+<script src="src/foods.js"></script>
+<script src="src/nutrients.js"></script>
+<script src="src/plan.js"></script>
+<script src="src/store.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script src="src/sync.js"></script>
+<script src="src/fx.js"></script>
+<script src="src/game.js"></script>
+<script src="src/extras.js"></script>
+<script src="src/overlays.js"></script>
+<script src="src/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
