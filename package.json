@@ -3,5 +3,5 @@
   "version": "0.1.0",
   "private": true,
   "description": "Personal closed-loop nutrition system: phases, calorie reviews, macros, fixed diet, micros, logging, groceries.",
-  "scripts": { "test": "node --test test/engine.test.js test/plan.test.js" }
+  "scripts": { "test": "node --test test/engine.test.js test/plan.test.js test/cook.test.js" }
 }

@@ -151,9 +151,10 @@ const ICONS = {
   macros: '<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 4v8l6 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
   micros: '<path d="M5 20V12M10 20V6M15 20V10M20 20V4" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
   log: '<rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  cook: '<path d="M4 11h16v2a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7v-2zM8 7c0-1.5 1-2 1-3.5M12 7c0-1.5 1-2 1-3.5M16 7c0-1.5 1-2 1-3.5M20 11l2-1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
   grocery: '<path d="M3 4h2l2.4 11h11l2-8H6.2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19.5" r="1.5" fill="currentColor"/><circle cx="17" cy="19.5" r="1.5" fill="currentColor"/>'
 };
-const TABS = [['progress', 'Progress'], ['macros', 'Macros'], ['micros', 'Micros'], ['log', 'Log'], ['grocery', 'Grocery']];
+const TABS = [['progress', 'Progress'], ['macros', 'Macros'], ['micros', 'Micros'], ['log', 'Log'], ['cook', 'Cook'], ['grocery', 'Grocery']];
 function nav(){
   const items = TABS.map(([k, l]) => `<button class="nv-i" data-act="tab" data-v="${k}" aria-current="${S.tab === k}" aria-label="${l}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg><span>${l}</span></button>`).join('');
   return `<aside class="rail"><div class="brand"><span class="brand-mark"></span><span class="brand-t">Nutrition<br>Coach</span></div><nav class="rail-nav">${items}</nav>${window.X ? X.railCard(S.g) : ''}</aside><nav class="tabbar">${items}</nav>`;
@@ -161,7 +162,7 @@ function nav(){
 function render(){
   if (!S.loaded) return;
   S.g = window.Game ? Game.compute() : null;
-  const v = S.tab === 'progress' ? viewProgress() : S.tab === 'macros' ? viewMacros() : S.tab === 'log' ? viewLog() : S.tab === 'micros' ? viewMicros() : viewGrocery();
+  const v = S.tab === 'progress' ? viewProgress() : S.tab === 'macros' ? viewMacros() : S.tab === 'log' ? viewLog() : S.tab === 'micros' ? viewMicros() : S.tab === 'cook' ? viewCook() : viewGrocery();
   const enter = S.enter; S.enter = false;
   $app.innerHTML = nav() + `<main class="view${enter ? ' enter' : ''}" data-tab="${S.tab}">${v}</main>`;
   window.FX && FX.after($app);
@@ -660,6 +661,28 @@ function viewMicros(){
   return head + ctrl + `<div class="grid two"><div class="stack">${sec.split('</section>').slice(0, 2).join('</section>')}</section></div><div class="stack">${sec.split('</section>').slice(2, 5).join('</section>')}</section></div></div>`;
 }
 
+// ---------- COOK ----------
+// How to make each of the day's meals, with every amount worked out from the current plan (cooked weights → raw).
+function viewCook(){
+  const today = todayISO(), date = S.cookDate || today, days = S.cookDays || 1, pd = plannedDay(date);
+  const dayType = PL.dayType(date);
+  const scaled = (pd ? pd.day : []).map(m => ({ ...m, items: m.items.map(it => ({ ...it, grams: it.grams * (['lunch', 'dinner'].includes(m.key) ? days : 1) })) }));
+  const G = Cook.guide(scaled, dayType);
+  const pick = (v, label, cur, act) => `<button class="btn ${cur ? '' : 'ghost'}" data-act="${act}" data-v="${v}" style="padding:6px 12px">${label}</button>`;
+  const head = `<header class="page"><span class="eyebrow">${dayLabel(date)} · ${esc(PL.DAY_LABEL[dayType] || dayType)}</span><h1 class="display">Cook</h1></header>
+    <p class="why" style="margin:-6px 0 12px">Every amount comes from your current plan. Meat, fish, rice and sweet potato are counted cooked, so this tells you what to take raw and what to weigh on the plate. When your plan's grams change, these change with them.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${pick(today, 'Today', date === today, 'cook-date')}${pick(E.addDays(today, 1), 'Tomorrow', date === E.addDays(today, 1), 'cook-date')}
+      <span style="width:12px"></span>${[1, 2, 3].map(n => pick(n, n === 1 ? 'Lunch & dinner for 1 day' : `for ${n} days`, days === n, 'cook-days')).join('')}</div>`;
+  const cards = G.map(m => `<section class="card cook" data-meal="${m.key}">
+    <div class="spread"><h3 class="display" style="font-size:24px">${esc(m.name)}</h3><span class="eyebrow">about ${m.minutes} min${days > 1 && ['lunch', 'dinner'].includes(m.key) ? ` · ${days} portions` : ''}</span></div>
+    <div class="ck-ing">${m.ingredients.map(i => `<div class="gitem" style="cursor:default;grid-template-columns:minmax(0,1fr) auto"><span class="gname">${esc(i.name)}<span class="gsub" style="display:block">${esc(i.prep)}</span></span><span class="gqty num">${esc(i.serve)}</span></div>`).join('')}</div>
+    <ol class="ck-steps">${m.steps.map(st => `<li>${esc(st)}</li>`).join('')}</ol>
+    ${m.safety ? `<p class="why"><b>Safe:</b> ${esc(m.safety)}</p>` : ''}
+    ${days > 1 && ['lunch', 'dinner'].includes(m.key) ? `<p class="why">Split into ${days} equal portions after cooking — weigh each one.</p>` : m.batch ? `<p class="why">${esc(m.batch)}</p>` : ''}
+    ${m.maidText ? `<button class="btn ghost" data-act="cook-copy" data-meal="${m.key}" style="align-self:flex-start">Copy for the maid</button>` : ''}</section>`).join('');
+  return head + `<div class="grid two"><div class="stack">${cards}</div></div>`;
+}
+
 // ---------- GROCERY ----------
 function viewGrocery(){
   const start = todayISO(), dates = Array.from({ length: 7 }, (_, i) => E.addDays(start, i));
@@ -686,6 +709,15 @@ async function toggleGrocery(key, on){
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
+  if (a === 'cook-date'){ S.cookDate = b.dataset.v; render(); return; }
+  if (a === 'cook-days'){ S.cookDays = +b.dataset.v; render(); return; }
+  if (a === 'cook-copy'){
+    const date = S.cookDate || todayISO(), days = S.cookDays || 1, pd = plannedDay(date);
+    const day = (pd ? pd.day : []).map(m => ({ ...m, items: m.items.map(it => ({ ...it, grams: it.grams * (['lunch', 'dinner'].includes(m.key) ? days : 1) })) }));
+    const m = Cook.guide(day).find(x => x.key === b.dataset.meal), txt = m.maidText + (days > 1 && ['lunch', 'dinner'].includes(m.key) ? ` That's ${days} portions — split equally.` : '');
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { b.textContent = 'Copied'; }, () => { b.textContent = txt; });
+    return;
+  }
   if (a === 'tab'){ if (S.tab !== b.dataset.v) S.enter = true; S.tab = b.dataset.v; render(); window.scrollTo({ top: 0, behavior: 'instant' }); }
   else if (a === 'save') saveCheckin();
   else if (a === 'mode'){ S.chartMode = b.dataset.v; S.readout = ''; render(); }

@@ -1,9 +1,9 @@
 // Offline support. The app's own files are cached so it opens with no connection.
 // Bump VERSION whenever the app's files change; the new version installs in the background
 // and takes over the next time the app is opened.
-const VERSION = 'nutrition-coach-v1';
+const VERSION = 'nutrition-coach-v2';
 const SHELL = [
-  './', 'index.html', 'manifest.webmanifest', 'config.js', 'fonts.css', 'styles/app.css', 'styles/fx.css', 'vendor/supabase.js', 'src/engine.js', 'src/foods.js', 'src/nutrients.js', 'src/plan.js', 'src/store.js', 'src/sync.js', 'src/fx.js', 'src/game.js', 'src/extras.js', 'src/overlays.js', 'src/app.js', 'fonts/barlow-condensed-latin-600-normal.woff2', 'fonts/barlow-condensed-latin-700-normal.woff2', 'fonts/barlow-condensed-latin-800-normal.woff2', 'fonts/ibm-plex-mono-latin-400-normal.woff2', 'fonts/ibm-plex-mono-latin-500-normal.woff2', 'fonts/ibm-plex-mono-latin-600-normal.woff2', 'fonts/ibm-plex-sans-latin-400-normal.woff2', 'fonts/ibm-plex-sans-latin-500-normal.woff2', 'fonts/ibm-plex-sans-latin-600-normal.woff2', 'fonts/ibm-plex-sans-latin-700-normal.woff2', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'
+  './', 'index.html', 'manifest.webmanifest', 'config.js', 'fonts.css', 'styles/app.css', 'styles/fx.css', 'vendor/supabase.js', 'src/engine.js', 'src/foods.js', 'src/nutrients.js', 'src/plan.js', 'src/cook.js', 'src/store.js', 'src/sync.js', 'src/fx.js', 'src/game.js', 'src/extras.js', 'src/overlays.js', 'src/app.js', 'fonts/barlow-condensed-latin-600-normal.woff2', 'fonts/barlow-condensed-latin-700-normal.woff2', 'fonts/barlow-condensed-latin-800-normal.woff2', 'fonts/ibm-plex-mono-latin-400-normal.woff2', 'fonts/ibm-plex-mono-latin-500-normal.woff2', 'fonts/ibm-plex-mono-latin-600-normal.woff2', 'fonts/ibm-plex-sans-latin-400-normal.woff2', 'fonts/ibm-plex-sans-latin-500-normal.woff2', 'fonts/ibm-plex-sans-latin-600-normal.woff2', 'fonts/ibm-plex-sans-latin-700-normal.woff2', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
